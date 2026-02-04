@@ -1,0 +1,113 @@
+plugins {
+    id 'java-library'
+    id 'maven-publish'
+    id 'signing'
+    id 'checkstyle'
+}
+
+group = 'io.github.khezyapp'
+version = '1.0.0-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+}
+
+java {
+    withJavadocJar()
+    withSourcesJar()
+
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(21)
+    }
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.release = 17
+}
+
+checkstyle {
+    toolVersion = "13.1.0"
+}
+
+dependencies {
+    testImplementation platform('org.junit:junit-bom:5.10.0')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+test {
+    useJUnitPlatform()
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            from components.java
+
+            pom {
+                name = 'Object Checksum'
+                description = 'A reflection-based utility for generating deterministic checksums of complex Java objects.'
+                url = 'https://github.com/khezyapp/object-checksum'
+
+                licenses {
+                    license {
+                        name = 'The MIT License'
+                        url = 'https://opensource.org/licenses/MIT'
+                    }
+                }
+
+                developers {
+                    developer {
+                        id = 'khezyapp'
+                        name = 'Khezy'
+                        email = 'khezy.app@gmail.com'
+                    }
+                }
+
+                scm {
+                    connection = 'scm:git:git://github.com/khezyapp/object-checksum.git'
+                    developerConnection = 'scm:git:ssh://github.com:khezyapp/object-checksum.git'
+                    url = 'https://github.com/khezyapp/object-checksum'
+                }
+            }
+        }
+    }
+
+    repositories {
+        maven {
+            name = "OSSRH"
+            def releasesRepoUrl = "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/"
+            def snapshotsRepoUrl = "https://s01.oss.sonatype.org/content/repositories/snapshots/"
+            url = version.endsWith('SNAPSHOT') ? snapshotsRepoUrl : releasesRepoUrl
+            credentials {
+                username = project.findProperty("ossrhUsername")
+                password = project.findProperty("ossrhPassword")
+            }
+        }
+
+        maven {
+            name = "TestRepo"
+            url = layout.buildDirectory.dir("repos")
+        }
+    }
+}
+
+signing {
+    def secretKeyFile = project.findProperty("signing.secretKeyRingFile")
+    // If the path starts with ~, replace it with the system user home
+    if (secretKeyFile != null && secretKeyFile.startsWith("~")) {
+        secretKeyFile = secretKeyFile.replaceFirst("~", System.getProperty("user.home"))
+        // Expand the path and overwrite the project property
+        project.ext["signing.secretKeyRingFile"] = secretKeyFile.replaceFirst("~", System.getProperty("user.home"))
+    }
+
+    def signingKey = findProperty("signingKey")
+    def signingPassword = findProperty("signingPassword")
+
+    if (signingKey != null) {
+        // If the key is provided as a string (CI), use in-memory
+        useInMemoryPgpKeys(signingKey, signingPassword)
+    }
+
+    sign publishing.publications.mavenJava
+}
