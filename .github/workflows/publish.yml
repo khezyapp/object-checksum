@@ -9,7 +9,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # New Step: Extract "1.0.0" from tag "v1.0.0"
       - name: Extract version from tag
         id: get_version
         run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
@@ -20,20 +19,15 @@ jobs:
           java-version: '21'
           distribution: 'temurin'
           server-id: ossrh
-          # This automatically handles GPG setup for you!
-          gpg-private-key: ${{ secrets.GPG_SECRET_KEY }}
-          gpg-passphrase: GPG_PASSWORD
-        env:
-          GPG_PASSWORD: ${{ secrets.GPG_PASSWORD }}
 
       - name: Publish with Gradle
-        # We pass the extracted version using -Pversion
-        run: ./gradlew publishToMavenCentral -Pversion=${{ steps.get_version.outputs.VERSION }}
+        # Passing -Pversion ensures the JAR is named correctly (e.g., 1.0.0 instead of 1.0.0-SNAPSHOT)
+        run: ./gradlew publishToMavenCentral -Pversion=${{ steps.get_version.outputs.VERSION }} --no-configuration-cache
         env:
-          # Map GitHub Secrets to the Project Properties Gradle expects
+          # Maven Central Credentials
           ORG_GRADLE_PROJECT_mavenCentralUsername: ${{ secrets.MAVENCENTRALUSERNAME }}
           ORG_GRADLE_PROJECT_mavenCentralPassword: ${{ secrets.MAVENCENTRALPASSWORD }}
-            # Use the Raw Armored Key String
+          # Use the Raw Armored Key String
           ORG_GRADLE_PROJECT_signingInMemoryKeyId: ${{ secrets.GPG_KEY_ID }}
           ORG_GRADLE_PROJECT_signingInMemoryKey: ${{ secrets.GPG_SECRET_KEY }}
           ORG_GRADLE_PROJECT_signingPassword: ${{ secrets.GPG_PASSWORD }}
