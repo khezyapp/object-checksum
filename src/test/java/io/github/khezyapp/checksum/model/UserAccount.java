@@ -26,15 +26,15 @@ public class UserAccount extends BaseEntity {
         return profile;
     }
 
-    public void setUsername(String username) {
+    public void setUsername(final String username) {
         this.username = username;
     }
 
-    public void setInternalToken(String internalToken) {
+    public void setInternalToken(final String internalToken) {
         this.internalToken = internalToken;
     }
 
-    public void setProfile(Profile profile) {
+    public void setProfile(final Profile profile) {
         this.profile = profile;
     }
 }

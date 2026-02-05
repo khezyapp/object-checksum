@@ -32,7 +32,7 @@ public enum ChecksumAlgorithm {
 
     /**
      * Retrieves the standard string name of the algorithm as recognized by the MessageDigest API.
-     * * @return The string name (e.g., "SHA-256").
+     * @return The string name (e.g., "SHA-256").
      */
     public String getValue() {
         return value;

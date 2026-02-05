@@ -14,7 +14,8 @@ class ReflectionsTest {
     void testGetAllFields() {
         final var user = new UserAccount();
         final var userFields = Reflections.getFields(user);
-        assertEquals(5, userFields.size());
+        final var expectedSize = 5;
+        assertEquals(expectedSize, userFields.size());
         assertTrue(userFields.parallelStream().anyMatch(f -> "id".equals(f.getName())));
         assertTrue(userFields.parallelStream().anyMatch(f -> "status".equals(f.getName())));
     }

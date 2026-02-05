@@ -1,21 +1,18 @@
 plugins {
     id 'java-library'
-    id 'maven-publish'
-    id 'signing'
     id 'checkstyle'
+    id "com.vanniktech.maven.publish" version "0.36.0"
 }
 
 group = 'io.github.khezyapp'
-version = '1.0.0-SNAPSHOT'
+// If -Pversion is passed (CI), use it. Otherwise, default to snapshot (Local).
+version = project.findProperty('version') ?: '1.0.0-SNAPSHOT'
 
 repositories {
     mavenCentral()
 }
 
 java {
-    withJavadocJar()
-    withSourcesJar()
-
     toolchain {
         languageVersion = JavaLanguageVersion.of(21)
     }
@@ -29,6 +26,21 @@ checkstyle {
     toolVersion = "13.1.0"
 }
 
+tasks.withType(Checkstyle).configureEach {
+    reports {
+        xml.required = false
+        html.required = true
+        sarif.required = true
+    }
+}
+
+tasks.withType(Javadoc).configureEach {
+    options {
+        // This stops the "warning: no comment" and HTML syntax messages.
+        addStringOption('Xdoclint:none', '-quiet')
+    }
+}
+
 dependencies {
     testImplementation platform('org.junit:junit-bom:5.10.0')
     testImplementation 'org.junit.jupiter:junit-jupiter'
@@ -40,51 +52,7 @@ test {
 }
 
 publishing {
-    publications {
-        mavenJava(MavenPublication) {
-            from components.java
-
-            pom {
-                name = 'Object Checksum'
-                description = 'A reflection-based utility for generating deterministic checksums of complex Java objects.'
-                url = 'https://github.com/khezyapp/object-checksum'
-
-                licenses {
-                    license {
-                        name = 'The MIT License'
-                        url = 'https://opensource.org/licenses/MIT'
-                    }
-                }
-
-                developers {
-                    developer {
-                        id = 'khezyapp'
-                        name = 'Khezy'
-                        email = 'khezy.app@gmail.com'
-                    }
-                }
-
-                scm {
-                    connection = 'scm:git:git://github.com/khezyapp/object-checksum.git'
-                    developerConnection = 'scm:git:ssh://github.com:khezyapp/object-checksum.git'
-                    url = 'https://github.com/khezyapp/object-checksum'
-                }
-            }
-        }
-    }
-
     repositories {
-        maven {
-            name = "OSSRH"
-            def releasesRepoUrl = "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/"
-            def snapshotsRepoUrl = "https://s01.oss.sonatype.org/content/repositories/snapshots/"
-            url = version.endsWith('SNAPSHOT') ? snapshotsRepoUrl : releasesRepoUrl
-            credentials {
-                username = project.findProperty("ossrhUsername")
-                password = project.findProperty("ossrhPassword")
-            }
-        }
-
         maven {
             name = "TestRepo"
             url = layout.buildDirectory.dir("repos")
@@ -92,22 +60,40 @@ publishing {
     }
 }
 
-signing {
-    def secretKeyFile = project.findProperty("signing.secretKeyRingFile")
-    // If the path starts with ~, replace it with the system user home
-    if (secretKeyFile != null && secretKeyFile.startsWith("~")) {
-        secretKeyFile = secretKeyFile.replaceFirst("~", System.getProperty("user.home"))
-        // Expand the path and overwrite the project property
-        project.ext["signing.secretKeyRingFile"] = secretKeyFile.replaceFirst("~", System.getProperty("user.home"))
+// Docs: https://vanniktech.github.io/gradle-maven-publish-plugin/central/
+mavenPublishing {
+    // 1. Tell the plugin what to publish
+    configureBasedOnAppliedPlugins()
+
+    // 2. Deployment Targets (Replaces your repositories block)
+    // For the new Central Portal (central.sonatype.com)
+    publishToMavenCentral(true)
+
+    // 3. Signing (Replaces your signing block)
+    signAllPublications()
+
+    // 4. POM Metadata (The plugin needs this to generate the POM)
+    pom {
+        name = 'Object Checksum'
+        description = 'A reflection-based utility for generating deterministic checksums of complex Java objects.'
+        url = 'https://github.com/khezyapp/object-checksum'
+        licenses {
+            license {
+                name = 'The MIT License'
+                url = 'https://opensource.org/licenses/MIT'
+            }
+        }
+        developers {
+            developer {
+                id = 'khezyapp'
+                name = 'Khezy'
+                email = 'khezy.app@gmail.com'
+            }
+        }
+        scm {
+            connection = 'scm:git:git://github.com/khezyapp/object-checksum.git'
+            developerConnection = 'scm:git:ssh://github.com:khezyapp/object-checksum.git'
+            url = 'https://github.com/khezyapp/object-checksum'
+        }
     }
-
-    def signingKey = findProperty("signingKey")
-    def signingPassword = findProperty("signingPassword")
-
-    if (signingKey != null) {
-        // If the key is provided as a string (CI), use in-memory
-        useInMemoryPgpKeys(signingKey, signingPassword)
-    }
-
-    sign publishing.publications.mavenJava
 }
