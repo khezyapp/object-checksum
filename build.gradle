@@ -4,10 +4,6 @@ plugins {
     id "com.vanniktech.maven.publish" version "0.36.0"
 }
 
-group = 'io.github.khezyapp'
-// If -Pversion is passed (CI), use it. Otherwise, default to snapshot (Local).
-version = project.findProperty('version') ?: '1.0.0-SNAPSHOT'
-
 repositories {
     mavenCentral()
 }
