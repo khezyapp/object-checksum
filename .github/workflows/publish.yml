@@ -27,8 +27,7 @@ jobs:
           # Maven Central Credentials
           ORG_GRADLE_PROJECT_mavenCentralUsername: ${{ secrets.MAVENCENTRALUSERNAME }}
           ORG_GRADLE_PROJECT_mavenCentralPassword: ${{ secrets.MAVENCENTRALPASSWORD }}
-
-          # In-Memory Signing Credentials (The Vanniktech plugin looks for these exact names)
+          # Use the Raw Armored Key String
           ORG_GRADLE_PROJECT_signingInMemoryKeyId: ${{ secrets.GPG_KEY_ID }}
           ORG_GRADLE_PROJECT_signingInMemoryKey: ${{ secrets.GPG_SECRET_KEY }}
           ORG_GRADLE_PROJECT_signingPassword: ${{ secrets.GPG_PASSWORD }}
