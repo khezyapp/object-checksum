@@ -45,7 +45,7 @@ class ChecksumsTest {
 
     @Test
     void shouldRunSuccessWithOtherAlgorithm() {
-        final var org = new Organization("TechCorp");
+        final var org = new Organization("TechCorp", Organization.Status.ENABLED);
         final var engineering = new Department("Engineering", org);
         org.addDept("ENG_01", engineering);
 
