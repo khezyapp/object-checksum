@@ -108,9 +108,12 @@ public final class Checksums {
         }
 
         if (obj instanceof Map<?, ?> map) {
-            for (final var entry : map.entrySet()) {
-                final var key = entry.getKey();
-                final var value = entry.getValue();
+            final var keys = map.keySet()
+                    .stream()
+                    .sorted()
+                    .toList();
+            for (final var key : keys) {
+                final var value = map.get(key);
                 if (Objects.nonNull(value)) {
                     if (Objects.nonNull(key)) {
                         digest.update(getByte(key));

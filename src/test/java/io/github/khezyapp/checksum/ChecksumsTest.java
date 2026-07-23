@@ -4,6 +4,9 @@ import io.github.khezyapp.checksum.model.Department;
 import io.github.khezyapp.checksum.model.Organization;
 import org.junit.jupiter.api.Test;
 
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 class ChecksumsTest {
@@ -51,5 +54,18 @@ class ChecksumsTest {
 
         assertNotNull(Checksums.md5(org));
         assertNotNull(Checksums.sha512(org));
+    }
+
+    @Test
+    void testMap() {
+        final var map1 = new HashMap<String, Object>();
+        map1.put("id", 1234);
+        map1.put("name", "TechCorp");
+
+        final var map2 = new LinkedHashMap<String, Object>();
+        map2.put("name", "TechCorp");
+        map2.put("id", 1234);
+
+        assertEquals(Checksums.md5(map1), Checksums.md5(map2));
     }
 }
